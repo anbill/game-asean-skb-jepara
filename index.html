@@ -1,62 +1,102 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Game ASEAN | SKB Jepara</title>
+<title>Petualangan ASEAN | SKB Jepara</title>
 
 <style>
-:root{
-  --main:#c1121f;
-  --second:#003049;
-  --bg:#f8f9fa;
-  --ok:#2a9d8f;
-  --bad:#e63946;
-}
+/* ===== BACKGROUND ANIMASI ===== */
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
-  background:var(--bg);
   text-align:center;
+  min-height:100vh;
+  background:linear-gradient(270deg,#c1121f,#003049,#669bbc,#f77f00);
+  background-size:800% 800%;
+  animation:bgMove 20s ease infinite;
 }
-.hidden{display:none;}
+@keyframes bgMove{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:url("https://upload.wikimedia.org/wikipedia/commons/6/6e/ASEAN_Flag.svg");
+  background-size:120px;
+  opacity:0.05;
+  animation:aseanMove 40s linear infinite;
+  z-index:-1;
+}
+@keyframes aseanMove{
+  from{background-position:0 0}
+  to{background-position:1200px 800px}
+}
+
+/* ===== UI ===== */
 header{
-  background:var(--main);
   color:#fff;
   padding:15px;
 }
 .card{
   background:#fff;
+  max-width:420px;
   margin:20px auto;
   padding:20px;
-  max-width:420px;
-  border-radius:12px;
-  box-shadow:0 6px 16px rgba(0,0,0,.15);
+  border-radius:14px;
+  box-shadow:0 8px 20px rgba(0,0,0,.2);
 }
+.hidden{display:none}
 button{
   width:100%;
   padding:12px;
   margin:6px 0;
   border:none;
   border-radius:8px;
+  background:#003049;
+  color:#fff;
   font-size:16px;
   cursor:pointer;
-  background:var(--second);
-  color:#fff;
 }
 button:hover{opacity:.9}
-.correct{background:var(--ok)!important;}
-.wrong{background:var(--bad)!important;}
-img{max-width:220px;margin:10px 0;}
-.timer{
-  font-weight:bold;
-  color:var(--main);
+.correct{background:#2a9d8f!important}
+.wrong{background:#e63946!important}
+img{max-width:220px;margin:10px 0}
+.timer{font-weight:bold;color:#c1121f}
+
+/* ===== HERO ===== */
+#hero{
+  position:fixed;
+  bottom:20px;
+  left:10px;
+  font-size:40px;
+  animation:walk 1s infinite;
+  transition:left .8s ease;
+  z-index:10;
 }
-footer{
-  margin-top:20px;
-  font-size:13px;
-  color:#555;
+@keyframes walk{
+  0%{transform:translateY(0)}
+  50%{transform:translateY(-4px)}
+  100%{transform:translateY(0)}
+}
+
+/* ===== PROGRESS ===== */
+#progressBox{
+  width:90%;
+  height:12px;
+  background:#ddd;
+  margin:10px auto;
+  border-radius:10px;
+}
+#progressBar{
+  height:100%;
+  width:0%;
+  background:#2a9d8f;
+  border-radius:10px;
+  transition:width .5s;
 }
 </style>
 </head>
@@ -64,118 +104,124 @@ footer{
 <body>
 
 <header>
-  <h2>SANGGAR KEGIATAN BELAJAR JEPARA</h2>
-  <p>Game Edukasi Kerja Sama ASEAN</p>
+  <h2>🌏 PETUALANGAN ASEAN</h2>
+  <p>SANGGAR KEGIATAN BELAJAR JEPARA</p>
 </header>
+
+<div id="hero">🚶‍♂️</div>
 
 <!-- MENU -->
 <div id="menu" class="card">
-  <h3>Pilih Level</h3>
-  <button onclick="startGame('mudah')">Mudah</button>
-  <button onclick="startGame('sedang')">Sedang</button>
-  <button onclick="startGame('sulit')">Sulit</button>
+  <h3>Mulai Petualangan</h3>
+  <p>Jelajahi negara ASEAN dan jawab tantangan!</p>
+  <button onclick="startGame()">🚀 Mulai</button>
 </div>
 
-<!-- QUIZ TEKS -->
-<div id="quiz" class="card hidden">
+<!-- GAME -->
+<div id="game" class="card hidden">
+  <div id="progressBox"><div id="progressBar"></div></div>
   <div class="timer">Waktu: <span id="time">15</span> detik</div>
-  <h3 id="qTitle"></h3>
+  <h3 id="map"></h3>
   <p id="question"></p>
+  <img id="img" class="hidden">
   <div id="options"></div>
   <p id="info"></p>
 </div>
 
-<!-- QUIZ GAMBAR -->
-<div id="imageQuiz" class="card hidden">
-  <div class="timer">Waktu: <span id="timeImg">15</span> detik</div>
-  <h3 id="imgTitle"></h3>
-  <img id="img">
-  <div id="imgOptions"></div>
-</div>
-
 <!-- HASIL -->
 <div id="result" class="card hidden">
-  <h2>Hasil Akhir</h2>
-  <h1 id="finalScore"></h1>
-  <p id="grade"></p>
+  <h2>🎉 Petualangan Selesai</h2>
+  <h1 id="score"></h1>
+  <p id="rank"></p>
   <button onclick="location.reload()">Main Lagi</button>
 </div>
 
-<footer>
-  Media Pembelajaran Interaktif • ASEAN • SKB Jepara
-</footer>
+<!-- AUDIO -->
+<audio id="soundOk" src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3"></audio>
+<audio id="soundBad" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"></audio>
 
 <script>
-/* ================= DATA ================= */
-const quizLevels={
-  mudah:[
-    {q:"ASEAN didirikan tahun?",o:["1945","1967","2000"],a:1,i:"ASEAN berdiri 8 Agustus 1967"},
-    {q:"Indonesia negara pendiri ASEAN?",o:["Ya","Tidak"],a:0,i:"Indonesia termasuk 5 pendiri"}
-  ],
-  sedang:[
-    {q:"Sekretariat ASEAN berada di?",o:["Bangkok","Jakarta","Manila"],a:1,i:"Sekretariat ASEAN di Jakarta"},
-    {q:"Kerja sama Indonesia–Malaysia di bidang?",o:["Pendidikan","Perang","Olahraga"],a:0,i:"Banyak kerja sama pendidikan"}
-  ],
-  sulit:[
-    {q:"MEA berkaitan dengan bidang?",o:["Ekonomi","Militer","Olahraga"],a:0,i:"MEA = Masyarakat Ekonomi ASEAN"},
-    {q:"ASEAN berdiri berapa negara awal?",o:["3","5","10"],a:1,i:"Pendiri awal ada 5 negara"}
-  ]
-};
-
-const imageQuizData=[
-  {t:"Bendera ASEAN",img:"https://upload.wikimedia.org/wikipedia/commons/6/6e/ASEAN_Flag.svg",o:["PBB","ASEAN","G20"],a:1},
-  {t:"Monumen ASEAN Jakarta",img:"https://upload.wikimedia.org/wikipedia/commons/4/47/ASEAN_Monument_Jakarta.jpg",o:["Vietnam","Indonesia","Laos"],a:1}
+/* ===== DATA PETUALANGAN ===== */
+const adventure=[
+  {
+    map:"🇮🇩 Indonesia – Jakarta",
+    q:"Indonesia bekerja sama dengan ASEAN di bidang?",
+    o:["Ekonomi","Perang","Balap"],
+    a:0,
+    info:"ASEAN fokus pada kerja sama ekonomi dan sosial"
+  },
+  {
+    map:"🇲🇾 Malaysia – Kuala Lumpur",
+    q:"Kerja sama Indonesia–Malaysia banyak di bidang?",
+    o:["Pendidikan","Konflik","Otomotif"],
+    a:0,
+    info:"Banyak pertukaran pelajar Indonesia–Malaysia"
+  },
+  {
+    map:"🇹🇭 Thailand – Bangkok",
+    q:"MEA berkaitan dengan?",
+    o:["Ekonomi","Militer","Olahraga"],
+    a:0,
+    info:"MEA = Masyarakat Ekonomi ASEAN"
+  },
+  {
+    map:"🇦🇸 ASEAN",
+    img:"https://upload.wikimedia.org/wikipedia/commons/6/6e/ASEAN_Flag.svg",
+    o:["PBB","ASEAN","G20"],
+    a:1,
+    info:"Ini adalah bendera resmi ASEAN"
+  }
 ];
 
-/* ================= VAR ================= */
-let data=[],i=0,score=0,timer;
-let imgI=0,imgScore=0,timerImg;
+/* ===== VAR ===== */
+let i=0,score=0,timer;
 
-/* ================= ELEMENT ================= */
+/* ===== ELEMENT ===== */
 const menu=document.getElementById("menu");
-const quiz=document.getElementById("quiz");
-const imageQuiz=document.getElementById("imageQuiz");
+const game=document.getElementById("game");
 const result=document.getElementById("result");
-
-const qTitle=document.getElementById("qTitle");
+const mapEl=document.getElementById("map");
 const question=document.getElementById("question");
+const img=document.getElementById("img");
 const options=document.getElementById("options");
 const info=document.getElementById("info");
 const time=document.getElementById("time");
+const scoreEl=document.getElementById("score");
+const rank=document.getElementById("rank");
+const hero=document.getElementById("hero");
+const progressBar=document.getElementById("progressBar");
+const soundOk=document.getElementById("soundOk");
+const soundBad=document.getElementById("soundBad");
 
-const imgTitle=document.getElementById("imgTitle");
-const img=document.getElementById("img");
-const imgOptions=document.getElementById("imgOptions");
-const timeImg=document.getElementById("timeImg");
-
-const finalScore=document.getElementById("finalScore");
-const grade=document.getElementById("grade");
-
-/* ================= GAME ================= */
-function startGame(level){
-  data=quizLevels[level];
+/* ===== GAME ===== */
+function startGame(){
   menu.classList.add("hidden");
-  quiz.classList.remove("hidden");
+  game.classList.remove("hidden");
   i=0;score=0;
-  loadQuiz();
+  moveHero();
+  loadStage();
 }
 
-function loadQuiz(){
+function loadStage(){
   clearInterval(timer);
   let t=15;
   time.textContent=t;
   timer=setInterval(()=>{
     t--;time.textContent=t;
-    if(t===0){nextQuiz();}
+    if(t===0) next();
   },1000);
 
-  const q=data[i];
-  qTitle.textContent="Soal "+(i+1);
-  question.textContent=q.q;
-  options.innerHTML="";
+  const s=adventure[i];
+  mapEl.textContent=s.map;
+  question.textContent=s.q || "Tebak Gambar";
   info.textContent="";
+  options.innerHTML="";
+  img.classList.toggle("hidden",!s.img);
+  if(s.img) img.src=s.img;
 
-  q.o.forEach((op,idx)=>{
+  updateProgress();
+
+  s.o.forEach((op,idx)=>{
     const b=document.createElement("button");
     b.textContent=op;
     b.onclick=()=>check(idx,b);
@@ -185,79 +231,45 @@ function loadQuiz(){
 
 function check(idx,btn){
   clearInterval(timer);
-  const q=data[i];
-  if(idx===q.a){
-    score+=10;
+  const s=adventure[i];
+  if(idx===s.a){
+    score+=25;
     btn.classList.add("correct");
+    soundOk.play();
   }else{
     btn.classList.add("wrong");
+    soundBad.play();
   }
-  info.textContent=q.i;
-  setTimeout(nextQuiz,1200);
+  info.textContent=s.info;
+  setTimeout(next,1200);
 }
 
-function nextQuiz(){
+function next(){
   i++;
-  if(i<data.length){
-    loadQuiz();
+  moveHero();
+  if(i<adventure.length){
+    loadStage();
   }else{
-    quiz.classList.add("hidden");
-    imageQuiz.classList.remove("hidden");
-    loadImgQuiz();
-  }
-}
-
-/* ================= IMAGE QUIZ ================= */
-function loadImgQuiz(){
-  clearInterval(timerImg);
-  let t=15;
-  timeImg.textContent=t;
-  timerImg=setInterval(()=>{
-    t--;timeImg.textContent=t;
-    if(t===0){nextImg();}
-  },1000);
-
-  const q=imageQuizData[imgI];
-  imgTitle.textContent=q.t;
-  img.src=q.img;
-  imgOptions.innerHTML="";
-
-  q.o.forEach((op,idx)=>{
-    const b=document.createElement("button");
-    b.textContent=op;
-    b.onclick=()=>checkImg(idx,b);
-    imgOptions.appendChild(b);
-  });
-}
-
-function checkImg(idx,btn){
-  clearInterval(timerImg);
-  const q=imageQuizData[imgI];
-  if(idx===q.a){
-    imgScore+=10;
-    btn.classList.add("correct");
-  }else{
-    btn.classList.add("wrong");
-  }
-  setTimeout(nextImg,1200);
-}
-
-function nextImg(){
-  imgI++;
-  if(imgI<imageQuizData.length){
-    loadImgQuiz();
-  }else{
-    imageQuiz.classList.add("hidden");
+    game.classList.add("hidden");
     result.classList.remove("hidden");
-    const total=score+imgScore;
-    finalScore.textContent=total;
-    grade.textContent=
-      total>=80?"🏆 Sangat Baik":
-      total>=50?"👍 Baik":
-      "📘 Perlu Belajar Lagi";
+    scoreEl.textContent="Skor: "+score;
+    rank.textContent=
+      score>=75?"🏆 Penjelajah ASEAN Hebat":
+      score>=50?"👍 Penjelajah Muda":
+      "📘 Perlu Latihan Lagi";
   }
+}
+
+/* ===== HERO & PROGRESS ===== */
+function moveHero(){
+  const max=window.innerWidth-60;
+  hero.style.left=(i/adventure.length)*max+"px";
+}
+function updateProgress(){
+  progressBar.style.width=((i+1)/adventure.length)*100+"%";
 }
 </script>
 
 </body>
 </html>
+
