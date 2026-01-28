@@ -1,92 +1,184 @@
+
 <!DOCTYPE html>
-answer:0
-},
-{
-title:"Kerja Sama ASEAN",
-img:"https://upload.wikimedia.org/wikipedia/commons/6/6e/ASEAN_Flag.svg",
-options:["PBB","Uni Eropa","ASEAN","G20"],
-answer:2
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Quiz ASEAN | SKB Jepara</title>
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#f2f2f2;
+  text-align:center;
+  margin:0;
+  padding:20px;
 }
+.hidden{display:none;}
+button{
+  padding:10px 15px;
+  margin:5px;
+  border:none;
+  border-radius:6px;
+  background:#007bff;
+  color:white;
+  cursor:pointer;
+}
+button:hover{background:#0056b3;}
+.option{display:block;width:100%;max-width:300px;margin:8px auto;}
+img{max-width:200px;margin:10px 0;}
+.header{
+  background:#d62828;
+  color:white;
+  padding:15px;
+  border-radius:8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>SANGGAR KEGIATAN BELAJAR JEPARA</h2>
+  <p>Game Edukasi Kerja Sama ASEAN</p>
+</div>
+
+<!-- MENU -->
+<div id="menu">
+  <h3>Selamat Datang</h3>
+  <button onclick="startQuiz()">Mulai Game</button>
+</div>
+
+<!-- QUIZ TEKS -->
+<div id="quiz" class="hidden">
+  <h3 id="qTitle"></h3>
+  <p id="question"></p>
+  <div id="options"></div>
+  <p id="score"></p>
+</div>
+
+<!-- QUIZ GAMBAR -->
+<div id="imageQuiz" class="hidden">
+  <h3 id="imgTitle"></h3>
+  <img id="img">
+  <div id="imgOptions"></div>
+  <p id="imgScore"></p>
+</div>
+
+<!-- HASIL -->
+<div id="result" class="hidden">
+  <h2>Skor Akhir</h2>
+  <h1 id="finalScore"></h1>
+  <button onclick="location.reload()">Main Lagi</button>
+</div>
+
+<script>
+/* ===== DATA QUIZ ===== */
+const quizData = [
+  {
+    q:"ASEAN didirikan pada tahun?",
+    options:["1945","1967","1998","2005"],
+    answer:1
+  },
+  {
+    q:"Indonesia adalah negara pendiri ASEAN",
+    options:["Benar","Salah"],
+    answer:0
+  }
 ];
 
+const imageQuizData = [
+  {
+    title:"Bendera ASEAN",
+    img:"https://upload.wikimedia.org/wikipedia/commons/6/6e/ASEAN_Flag.svg",
+    options:["PBB","Uni Eropa","ASEAN","G20"],
+    answer:2
+  }
+];
 
-let index=0,score=0;
-let imgIndex=0,imgScore=0;
+/* ===== VARIABEL ===== */
+let index=0, score=0, imgIndex=0, imgScore=0;
 
+/* ===== ELEMENT ===== */
+const menu=document.getElementById("menu");
+const quiz=document.getElementById("quiz");
+const imageQuiz=document.getElementById("imageQuiz");
+const result=document.getElementById("result");
 
+const qTitle=document.getElementById("qTitle");
+const question=document.getElementById("question");
+const options=document.getElementById("options");
+const scoreText=document.getElementById("score");
+
+const imgTitle=document.getElementById("imgTitle");
+const img=document.getElementById("img");
+const imgOptions=document.getElementById("imgOptions");
+const imgScoreText=document.getElementById("imgScore");
+
+const finalScore=document.getElementById("finalScore");
+
+/* ===== QUIZ TEKS ===== */
 function startQuiz(){
-menu.classList.add('hidden');
-quiz.classList.remove('hidden');
-index=0;score=0;loadQuiz();
+  menu.classList.add("hidden");
+  quiz.classList.remove("hidden");
+  index=0; score=0;
+  loadQuiz();
 }
-
 
 function loadQuiz(){
-const q=quizData[index];
-qTitle.textContent=`Soal ${index+1}`;
-question.textContent=q.q;
-options.innerHTML="";
-q.options.forEach((opt,i)=>{
-const btn=document.createElement('button');
-btn.textContent=opt;btn.className='option';
-btn.onclick=()=>checkAnswer(i);
-options.appendChild(btn);
-});
-scoreEl();
+  const q=quizData[index];
+  qTitle.textContent="Soal "+(index+1);
+  question.textContent=q.q;
+  options.innerHTML="";
+  q.options.forEach((opt,i)=>{
+    const btn=document.createElement("button");
+    btn.textContent=opt;
+    btn.className="option";
+    btn.onclick=()=>checkAnswer(i);
+    options.appendChild(btn);
+  });
+  scoreText.textContent="Skor: "+score;
 }
-
 
 function checkAnswer(i){
-if(i===quizData[index].answer) score++;
-index++;
-if(index<quizData.length) loadQuiz();
-else{
-question.textContent="Kuis selesai!";
-options.innerHTML="Skor akhir kamu: "+score+" / "+quizData.length;
-}
-}
-function scoreEl(){score.textContent="Skor: "+score}
-
-
-function startImageQuiz(){
-menu.classList.add('hidden');
-imageQuiz.classList.remove('hidden');
-imgIndex=0;imgScore=0;loadImgQuiz();
+  if(i===quizData[index].answer) score++;
+  index++;
+  if(index<quizData.length){
+    loadQuiz();
+  }else{
+    quiz.classList.add("hidden");
+    imageQuiz.classList.remove("hidden");
+    loadImageQuiz();
+  }
 }
 
-
-function loadImgQuiz(){
-const q=imageQuizData[imgIndex];
-imgTitle.textContent=q.title;
-quizImage.src=q.img;
-imgOptions.innerHTML="";
-q.options.forEach((opt,i)=>{
-const btn=document.createElement('button');
-btn.textContent=opt;btn.className='option';
-btn.onclick=()=>checkImgAnswer(i);
-imgOptions.appendChild(btn);
-});
-imgScoreEl();
+/* ===== QUIZ GAMBAR ===== */
+function loadImageQuiz(){
+  const q=imageQuizData[imgIndex];
+  imgTitle.textContent=q.title;
+  img.src=q.img;
+  imgOptions.innerHTML="";
+  q.options.forEach((opt,i)=>{
+    const btn=document.createElement("button");
+    btn.textContent=opt;
+    btn.className="option";
+    btn.onclick=()=>checkImgAnswer(i);
+    imgOptions.appendChild(btn);
+  });
+  imgScoreText.textContent="Skor Gambar: "+imgScore;
 }
-
 
 function checkImgAnswer(i){
-if(i===imageQuizData[imgIndex].answer) imgScore++;
-imgIndex++;
-if(imgIndex<imageQuizData.length) loadImgQuiz();
-else{
-imgTitle.textContent="Tebak Gambar Selesai!";
-imgOptions.innerHTML="Skor akhir kamu: "+imgScore+" / "+imageQuizData.length;
-}
-}
-function imgScoreEl(){imgScore.textContent="Skor: "+imgScore}
-
-
-function backMenu(){
-quiz.classList.add('hidden');
-imageQuiz.classList.add('hidden');
-menu.classList.remove('hidden');
+  if(i===imageQuizData[imgIndex].answer) imgScore++;
+  imgIndex++;
+  if(imgIndex<imageQuizData.length){
+    loadImageQuiz();
+  }else{
+    imageQuiz.classList.add("hidden");
+    result.classList.remove("hidden");
+    finalScore.textContent=score+imgScore;
+  }
 }
 </script>
+
 </body>
 </html>
